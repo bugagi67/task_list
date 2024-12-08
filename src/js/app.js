@@ -59,7 +59,7 @@ function createTask(textarea) {
   newTask.draggable = true;
   const btnDel = document.createElement("img");
   btnDel.classList.add("delete__task-button");
-  btnDel.src = "./assets/image/remove_item.png"
+  btnDel.src = "./assets/image/remove_item.png";
   newTask.textContent = textarea.value;
   newTask.append(btnDel);
 
@@ -124,7 +124,7 @@ function createPlaceholder() {
 }
 
 function onDragStart(e) {
-  draggedElement = e.target; 
+  draggedElement = e.target;
   if (draggedElement) {
     e.dataTransfer.effectAllowed = "move";
     setTimeout(() => {
