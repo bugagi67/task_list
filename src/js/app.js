@@ -36,6 +36,7 @@ export default function main() {
   });
 
   createPlaceholder();
+  showRemoveBtn();
   initializeDragAndDrop();
   removeItem();
   removeTaskColumn();
@@ -50,6 +51,7 @@ function addTask(textarea) {
   task.addEventListener("dragstart", onDragStart);
   task.addEventListener("dragend", onDragEnd);
 
+  showRemoveBtn();
   removeItem();
 }
 
@@ -103,6 +105,19 @@ function removeTaskColumn() {
   });
 }
 
+function showRemoveBtn() {
+  const taskItems = document.querySelectorAll(".task__item");
+
+  taskItems.forEach((item) => {
+    item.addEventListener("mouseover", () => {
+      item.querySelector(".delete__task-button").style.display = "block";
+    });
+    item.addEventListener("mouseout", () => {
+      item.querySelector(".delete__task-button").style.display = "none";
+    });
+  });
+}
+
 function initializeDragAndDrop() {
   const taskItems = document.querySelectorAll(".task__item");
   taskItems.forEach((item) => {
@@ -115,11 +130,6 @@ function initializeDragAndDrop() {
 function createPlaceholder() {
   const placeholder = document.createElement("li");
   placeholder.classList.add("placeholder");
-  placeholder.style.height = "50px";
-  placeholder.style.background = "#f0f0f0";
-  placeholder.style.border = "2px dashed #ccc";
-  placeholder.style.margin = "5px 0";
-
   return placeholder;
 }
 

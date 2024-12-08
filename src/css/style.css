@@ -81,14 +81,15 @@ body {
 }
 
 .delete__task-button {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 5px;
-    cursor: pointer;
-    width: 25px;
-    height: 25px;   
-    user-select: all;
+  display: none;
+  top: 0;
+  right: 0;
+  padding: 5px;
+  cursor: pointer;
+  width: 25px;
+  height: 25px;
+  user-select: all;
+  position: absolute;
 }
 
 
@@ -125,7 +126,7 @@ body {
     color: #fff;
     padding: 5px;
     margin-right: 3px;
-    
+
 }
 .button__add:disabled {
     background-color: #cbcbcb;
@@ -177,21 +178,16 @@ background-color: #f44336;
 .task__item.hidden {
     display: none;
   }
-  
+
   .task__item.dragging {
     opacity: 0.5;
     cursor: grabbing;
   }
-  
+
   /* Эффект при наведении на список */
   .task__list {
-    min-height: 50px; /* Чтобы списки не схлопывались */
+    min-height: 50px;
     border: 2px dashed transparent;
-    transition: border-color 0.3s ease;
-  }
-  
-  .task__list.dragover {
-    border-color: #0079bf;
   }
 
   .hidden {
@@ -199,10 +195,10 @@ background-color: #f44336;
   }
 
   .placeholder {
-    height: 50px; /* Устанавливайте нужную высоту */
-    background-color: #f0f0f0;
-    border: 2px dashed #ccc;
+    height: 50px;
+    background-color: #f8f8f8;
+    border: 1px dashed #ccc;
     margin: 5px 0;
     box-sizing: border-box;
+    transition: border-color 0.3s ease;
   }
-  
