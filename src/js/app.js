@@ -24,15 +24,17 @@ export default function main() {
 
   textarea.addEventListener("keyup", (e) => {
     if (e.key === "Enter") {
-      addTask(textarea, e);
+      addTask(textarea, taskLists[0]);
       closeForm(form, textarea);
+      unlockAddButton(btnCreate, e);
     }
   });
 
   btnCreate.addEventListener("click", (e) => {
     e.preventDefault();
-    addTask(textarea, e);
+    addTask(textarea, taskLists[0]);
     closeForm(form, textarea);
+    unlockAddButton(btnCreate, e);
   });
 
   createPlaceholder();
@@ -40,12 +42,12 @@ export default function main() {
   initializeDragAndDrop();
   removeItem();
   removeTaskColumn();
+  initLists(taskLists);
 }
 
-function addTask(textarea) {
+function addTask(textarea, list) {
   const task = createTask(textarea);
-  const taskList = document.querySelector(".task__list");
-  taskList.append(task);
+  list.append(task);
 
   task.draggable = true;
   task.addEventListener("dragstart", onDragStart);
@@ -53,6 +55,7 @@ function addTask(textarea) {
 
   showRemoveBtn();
   removeItem();
+  saveResult();
 }
 
 function createTask(textarea) {
@@ -62,7 +65,8 @@ function createTask(textarea) {
   const btnDel = document.createElement("img");
   btnDel.classList.add("delete__task-button");
   btnDel.src = "./assets/image/remove_item.png";
-  newTask.textContent = textarea.value;
+  newTask.textContent =
+    typeof textarea === "string" ? textarea : textarea.value;
   newTask.append(btnDel);
 
   return newTask;
@@ -210,4 +214,64 @@ function onDragEnd(e) {
     placeholder.remove();
     placeholder = null;
   }
+  saveResult();
+}
+
+function saveResult() {
+  const store = {
+    TODO: [],
+    PROGRESS: [],
+    DONE: [],
+  };
+
+  const taskLists = document.querySelectorAll(".task__list");
+
+  taskLists.forEach((item) => {
+    if (item.closest(".todo__container")) {
+      const listElements = item.querySelectorAll(".task__item");
+      listElements.forEach((element) => {
+        store.TODO.push(element.textContent);
+      });
+    } else if (item.closest(".inProgress__container")) {
+      const listElements = item.querySelectorAll(".task__item");
+      listElements.forEach((element) => {
+        store.PROGRESS.push(element.textContent);
+      });
+    } else {
+      const listElements = item.querySelectorAll(".task__item");
+      listElements.forEach((element) => {
+        store.DONE.push(element.textContent);
+      });
+    }
+  });
+  setLocalStorage(store);
+  return store;
+}
+
+function initLists(taskList) {
+  if (localStorage) {
+    const store = JSON.parse(localStorage.getItem("store"));
+
+    const [todo, progress, done] = taskList;
+
+    if (store.TODO.length > 0) {
+      store.TODO.forEach((element) => {
+        addTask(element, todo);
+      });
+    }
+    if (store.PROGRESS.length > 0) {
+      store.PROGRESS.forEach((element) => {
+        addTask(element, progress);
+      });
+    }
+    if (store.DONE.length > 0) {
+      store.DONE.forEach((element) => {
+        addTask(element, done);
+      });
+    }
+  }
+}
+
+function setLocalStorage(store) {
+  localStorage.setItem("store", JSON.stringify(store));
 }
