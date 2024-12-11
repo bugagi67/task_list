@@ -3,7 +3,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/s6gqx1aijcsowh40?svg=true)](https://ci.appveyor.com/project/bugagi67/task-list)
 
-GH-PAGES:
+GH-PAGES: https://bugagi67.github.io/task_list/
 
 Легенда
 Вы делаете внутрикорпоративную систему управления задачами и вашему руководству очень нравится подход, который используется в Trello.
