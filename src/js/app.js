@@ -2,10 +2,6 @@ let draggedElement = null;
 let placeholder = null;
 
 export default function main() {
-  const btnAddCard = document.querySelector(".btn__add-card");
-  const form = document.querySelector(".form");
-  const btnCreate = document.querySelector(".button__add");
-  const textarea = document.querySelector(".text__new-task");
   const taskLists = document.querySelectorAll(".task__list");
 
   taskLists.forEach((taskList) => {
@@ -13,15 +9,18 @@ export default function main() {
     taskList.addEventListener("drop", onDrop);
   });
 
-  btnAddCard.addEventListener("click", (e) => {
-    e.preventDefault();
-    form.style.display = "block";
-  });
+  initializeUi();
+  setupEventListener(taskLists);
+  initLists(taskLists);
+}
 
-  textarea.addEventListener("input", (e) => {
-    unlockAddButton(btnCreate, e);
-  });
-
+function setupEventListener(taskLists) {
+  const btnAddCard = document.querySelector(".btn__add-card");
+  const btnCreate = document.querySelector(".button__add");
+  const textarea = document.querySelector(".text__new-task");
+  const form = document.querySelector(".form");
+  btnAddCard.addEventListener("click", () => handleFormOpen(form));
+  textarea.addEventListener("input", (e) => unlockAddButton(btnCreate, e));
   textarea.addEventListener("keyup", (e) => {
     if (e.key === "Enter") {
       addTask(textarea, taskLists[0]);
@@ -29,33 +28,38 @@ export default function main() {
       unlockAddButton(btnCreate, e);
     }
   });
-
   btnCreate.addEventListener("click", (e) => {
-    e.preventDefault();
     addTask(textarea, taskLists[0]);
     closeForm(form, textarea);
     unlockAddButton(btnCreate, e);
   });
+}
 
-  createPlaceholder();
-  showRemoveBtn();
+function handleFormOpen(form) {
+  form.style.display = "block";
+}
+
+function initializeUi() {
   initializeDragAndDrop();
-  removeItem();
+  createPlaceholder();
   removeTaskColumn();
-  initLists(taskLists);
+  showRemoveBtn();
+  removeItem();
 }
 
 function addTask(textarea, list) {
   const task = createTask(textarea);
-  list.append(task);
+  addTaskToList(task, list);
+  saveResult();
+}
 
+function addTaskToList(task, list) {
+  list.append(task);
   task.draggable = true;
   task.addEventListener("dragstart", onDragStart);
   task.addEventListener("dragend", onDragEnd);
-
   showRemoveBtn();
   removeItem();
-  saveResult();
 }
 
 function createTask(textarea) {
@@ -219,59 +223,33 @@ function onDragEnd(e) {
 
 function saveResult() {
   const store = {
-    TODO: [],
-    PROGRESS: [],
-    DONE: [],
+    TODO: getTaskItems(".todo__container").map((item) => item.textContent),
+    PROGRESS: getTaskItems(".inProgress__container").map(
+      (item) => item.textContent,
+    ),
+    DONE: getTaskItems(".done__container").map((item) => item.textContent),
   };
-
-  const taskLists = document.querySelectorAll(".task__list");
-
-  taskLists.forEach((item) => {
-    if (item.closest(".todo__container")) {
-      const listElements = item.querySelectorAll(".task__item");
-      listElements.forEach((element) => {
-        store.TODO.push(element.textContent);
-      });
-    } else if (item.closest(".inProgress__container")) {
-      const listElements = item.querySelectorAll(".task__item");
-      listElements.forEach((element) => {
-        store.PROGRESS.push(element.textContent);
-      });
-    } else {
-      const listElements = item.querySelectorAll(".task__item");
-      listElements.forEach((element) => {
-        store.DONE.push(element.textContent);
-      });
-    }
-  });
   setLocalStorage(store);
-  return store;
 }
 
 function initLists(taskList) {
-  if (localStorage) {
-    const store = JSON.parse(localStorage.getItem("store"));
+  const store = JSON.parse(localStorage.getItem("store"));
 
-    const [todo, progress, done] = taskList;
-
-    if (store.TODO.length > 0) {
-      store.TODO.forEach((element) => {
-        addTask(element, todo);
-      });
-    }
-    if (store.PROGRESS.length > 0) {
-      store.PROGRESS.forEach((element) => {
-        addTask(element, progress);
-      });
-    }
-    if (store.DONE.length > 0) {
-      store.DONE.forEach((element) => {
-        addTask(element, done);
-      });
-    }
+  if (store) {
+    populateTasks(taskList[0], store.TODO);
+    populateTasks(taskList[1], store.PROGRESS);
+    populateTasks(taskList[2], store.DONE);
   }
 }
 
 function setLocalStorage(store) {
   localStorage.setItem("store", JSON.stringify(store));
+}
+
+function getTaskItems(containerClass) {
+  return Array.from(document.querySelectorAll(`${containerClass} .task__item`));
+}
+
+function populateTasks(taskList, tasks) {
+  tasks.forEach((task) => addTask(task, taskList));
 }
