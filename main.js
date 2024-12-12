@@ -3732,6 +3732,12 @@ var update = injectStylesIntoStyleTag_default()(style/* default */.A, options);
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.for-each.js
 var es_array_for_each = __webpack_require__(1629);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.object.to-string.js
+var es_object_to_string = __webpack_require__(6099);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/web.dom-collections.for-each.js
+var web_dom_collections_for_each = __webpack_require__(3500);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/web.timers.js
+var web_timers = __webpack_require__(6031);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.from.js
 var es_array_from = __webpack_require__(3418);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.map.js
@@ -3740,70 +3746,14 @@ var es_array_map = __webpack_require__(2062);
 var es_date_to_json = __webpack_require__(739);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.object.keys.js
 var es_object_keys = __webpack_require__(9432);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.object.to-string.js
-var es_object_to_string = __webpack_require__(6099);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.string.iterator.js
 var es_string_iterator = __webpack_require__(7764);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/web.dom-collections.for-each.js
-var web_dom_collections_for_each = __webpack_require__(3500);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/web.timers.js
-var web_timers = __webpack_require__(6031);
-;// ./src/js/app.js
+;// ./src/js/task.js
 
 
 
 
 
-
-
-
-
-var draggedElement = null;
-var placeholder = null;
-function main() {
-  var taskLists = document.querySelectorAll(".task__list");
-  taskLists.forEach(function (taskList) {
-    taskList.addEventListener("dragover", onDragOver);
-    taskList.addEventListener("drop", onDrop);
-  });
-  initializeUi();
-  setupEventListener(taskLists);
-  initLists(taskLists);
-}
-function setupEventListener(taskLists) {
-  var btnAddCard = document.querySelector(".btn__add-card");
-  var btnCreate = document.querySelector(".button__add");
-  var textarea = document.querySelector(".text__new-task");
-  var form = document.querySelector(".form");
-  btnAddCard.addEventListener("click", function () {
-    return handleFormOpen(form);
-  });
-  textarea.addEventListener("input", function (e) {
-    return unlockAddButton(btnCreate, e);
-  });
-  textarea.addEventListener("keyup", function (e) {
-    if (e.key === "Enter") {
-      addTask(textarea, taskLists[0]);
-      closeForm(form, textarea);
-      unlockAddButton(btnCreate, e);
-    }
-  });
-  btnCreate.addEventListener("click", function (e) {
-    addTask(textarea, taskLists[0]);
-    closeForm(form, textarea);
-    unlockAddButton(btnCreate, e);
-  });
-}
-function handleFormOpen(form) {
-  form.style.display = "block";
-}
-function initializeUi() {
-  initializeDragAndDrop();
-  createPlaceholder();
-  removeTaskColumn();
-  showRemoveBtn();
-  removeItem();
-}
 function addTask(textarea, list) {
   var task = createTask(textarea);
   addTaskToList(task, list);
@@ -3827,18 +3777,6 @@ function createTask(textarea) {
   newTask.textContent = typeof textarea === "string" ? textarea : textarea.value;
   newTask.append(btnDel);
   return newTask;
-}
-function unlockAddButton(button, e) {
-  var value = e.target.value;
-  if (value) {
-    button.removeAttribute("disabled");
-  } else {
-    button.setAttribute("disabled", "true");
-  }
-}
-function closeForm(form, input) {
-  input.value = "";
-  form.style.display = "none";
 }
 function removeItem() {
   var removeTask = document.querySelectorAll(".delete__task-button");
@@ -3871,6 +3809,57 @@ function showRemoveBtn() {
     });
   });
 }
+;// ./src/js/utils/storage.js
+
+
+
+
+
+
+
+
+
+function saveResult() {
+  var store = {
+    TODO: getTaskItems(".todo__container").map(function (item) {
+      return item.textContent;
+    }),
+    PROGRESS: getTaskItems(".inProgress__container").map(function (item) {
+      return item.textContent;
+    }),
+    DONE: getTaskItems(".done__container").map(function (item) {
+      return item.textContent;
+    })
+  };
+  setLocalStorage(store);
+}
+function initLists(taskList) {
+  var store = JSON.parse(localStorage.getItem("store"));
+  if (store) {
+    populateTasks(taskList[0], store.TODO);
+    populateTasks(taskList[1], store.PROGRESS);
+    populateTasks(taskList[2], store.DONE);
+  }
+}
+function setLocalStorage(store) {
+  localStorage.setItem("store", JSON.stringify(store));
+}
+function getTaskItems(containerClass) {
+  return Array.from(document.querySelectorAll("".concat(containerClass, " .task__item")));
+}
+function populateTasks(taskList, tasks) {
+  tasks.forEach(function (task) {
+    return addTask(task, taskList);
+  });
+}
+;// ./src/js/utils/dragAndDrop.js
+
+
+
+
+
+var draggedElement = null;
+var placeholder = null;
 function initializeDragAndDrop() {
   var taskItems = document.querySelectorAll(".task__item");
   taskItems.forEach(function (item) {
@@ -3949,38 +3938,75 @@ function onDragEnd(e) {
   }
   saveResult();
 }
-function saveResult() {
-  var store = {
-    TODO: getTaskItems(".todo__container").map(function (item) {
-      return item.textContent;
-    }),
-    PROGRESS: getTaskItems(".inProgress__container").map(function (item) {
-      return item.textContent;
-    }),
-    DONE: getTaskItems(".done__container").map(function (item) {
-      return item.textContent;
-    })
-  };
-  setLocalStorage(store);
+;// ./src/js/form.js
+function handleFormOpen(form) {
+  form.style.display = "block";
 }
-function initLists(taskList) {
-  var store = JSON.parse(localStorage.getItem("store"));
-  if (store) {
-    populateTasks(taskList[0], store.TODO);
-    populateTasks(taskList[1], store.PROGRESS);
-    populateTasks(taskList[2], store.DONE);
+function closeForm(form, input) {
+  input.value = "";
+  form.style.display = "none";
+}
+function unlockAddButton(button, e) {
+  var value = e.target.value;
+  if (value) {
+    button.removeAttribute("disabled");
+  } else {
+    button.setAttribute("disabled", "true");
   }
 }
-function setLocalStorage(store) {
-  localStorage.setItem("store", JSON.stringify(store));
-}
-function getTaskItems(containerClass) {
-  return Array.from(document.querySelectorAll("".concat(containerClass, " .task__item")));
-}
-function populateTasks(taskList, tasks) {
-  tasks.forEach(function (task) {
-    return addTask(task, taskList);
+;// ./src/js/app.js
+
+
+
+
+
+
+
+
+function main() {
+  var taskLists = document.querySelectorAll(".task__list");
+  taskLists.forEach(function (taskList) {
+    taskList.addEventListener("dragover", onDragOver);
+    taskList.addEventListener("drop", onDrop);
   });
+  initializeUi();
+  setupEventListener(taskLists);
+  initLists(taskLists);
+}
+function setupEventListener(taskLists) {
+  var btnAddCard = document.querySelector(".btn__add-card");
+  var btnCreate = document.querySelector(".button__add");
+  var textarea = document.querySelector(".text__new-task");
+  var form = document.querySelector(".form");
+  var btnCancel = document.querySelector(".button__cancel");
+  btnAddCard.addEventListener("click", function () {
+    return handleFormOpen(form);
+  });
+  textarea.addEventListener("input", function (e) {
+    return unlockAddButton(btnCreate, e);
+  });
+  textarea.addEventListener("keyup", function (e) {
+    if (e.key === "Enter") {
+      addTask(textarea, taskLists[0]);
+      closeForm(form, textarea);
+      unlockAddButton(btnCreate, e);
+    }
+  });
+  btnCreate.addEventListener("click", function (e) {
+    addTask(textarea, taskLists[0]);
+    closeForm(form, textarea);
+    unlockAddButton(btnCreate, e);
+  });
+  btnCancel.addEventListener("click", function () {
+    return closeForm(form, textarea);
+  });
+}
+function initializeUi() {
+  initializeDragAndDrop();
+  createPlaceholder();
+  removeTaskColumn();
+  showRemoveBtn();
+  removeItem();
 }
 ;// ./src/index.js
 
